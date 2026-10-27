@@ -1,5 +1,7 @@
 # Expense Tracker API
 
+[![CI](https://github.com/Alexanderbr1/expense-tracker-api/actions/workflows/ci.yml/badge.svg)](https://github.com/Alexanderbr1/expense-tracker-api/actions/workflows/ci.yml)
+
 Небольшой сервис на FastAPI для учёта личных расходов: добавление расходов,
 просмотр с фильтром по категории, удаление и сводная статистика по категориям.
 
@@ -52,8 +54,8 @@ https://github.com/maximblaze/test_project_inf_course
 Нужен Python 3.12 (подойдёт и 3.10+).
 
 ```bash
-git clone <ссылка на этот репозиторий>
-cd <папка репозитория>
+git clone https://github.com/Alexanderbr1/expense-tracker-api.git
+cd expense-tracker-api
 
 python3 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
