@@ -4,15 +4,20 @@
 https://github.com/maximblaze/test_project_inf_course
 """
 
+import os
+
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 load_dotenv()
 
-APP_VERSION = "0.1.0"
+APP_NAME = os.getenv("APP_NAME", "Expense Tracker")
+APP_VERSION = os.getenv("APP_VERSION", "0.1.0")
+CURRENCY = os.getenv("CURRENCY", "RUB")
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
-app = FastAPI(title="Expense Tracker")
+app = FastAPI(title=APP_NAME, version=APP_VERSION)
 
 
 class ExpenseIn(BaseModel):
@@ -33,8 +38,9 @@ next_id = 1
 @app.get("/")
 def root():
     return {
-        "service": "Expense Tracker",
+        "service": APP_NAME,
         "description": "Учёт личных расходов по категориям",
+        "currency": CURRENCY,
         "docs": "/docs",
     }
 
