@@ -4,10 +4,13 @@
 https://github.com/maximblaze/test_project_inf_course
 """
 
+import logging
 import os
+import time
+from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field
 
 load_dotenv()
@@ -17,7 +20,36 @@ APP_VERSION = os.getenv("APP_VERSION", "0.1.0")
 CURRENCY = os.getenv("CURRENCY", "RUB")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
-app = FastAPI(title=APP_NAME, version=APP_VERSION)
+logging.basicConfig(
+    level=LOG_LEVEL,
+    format="%(asctime)s | %(levelname)s | %(message)s",
+)
+logger = logging.getLogger("expense_tracker")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info(
+        "Starting %s v%s (currency=%s, log_level=%s)",
+        APP_NAME, APP_VERSION, CURRENCY, LOG_LEVEL,
+    )
+    yield
+    logger.info("Shutting down %s", APP_NAME)
+
+
+app = FastAPI(title=APP_NAME, version=APP_VERSION, lifespan=lifespan)
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    duration_ms = (time.perf_counter() - start) * 1000
+    logger.info(
+        "%s %s -> %s (%.1f ms)",
+        request.method, request.url.path, response.status_code, duration_ms,
+    )
+    return response
 
 
 class ExpenseIn(BaseModel):
@@ -61,6 +93,10 @@ def create_expense(data: ExpenseIn) -> Expense:
     expense = Expense(id=next_id, **data.model_dump())
     expenses[expense.id] = expense
     next_id += 1
+    logger.info(
+        "Created expense id=%s amount=%s category=%s",
+        expense.id, expense.amount, expense.category,
+    )
     return expense
 
 
@@ -71,16 +107,21 @@ def list_expenses(category: str | None = None) -> list[Expense]:
     return [e for e in expenses.values() if e.category.lower() == category.lower()]
 
 
-@app.get("/expenses/{expense_id}")
-def get_expense(expense_id: int) -> Expense:
+def find_expense(expense_id: int) -> Expense:
     if expense_id not in expenses:
+        logger.warning("Expense %s not found", expense_id)
         raise HTTPException(status_code=404, detail=f"Расход {expense_id} не найден")
     return expenses[expense_id]
 
 
+@app.get("/expenses/{expense_id}")
+def get_expense(expense_id: int) -> Expense:
+    return find_expense(expense_id)
+
+
 @app.delete("/expenses/{expense_id}")
 def delete_expense(expense_id: int):
-    if expense_id not in expenses:
-        raise HTTPException(status_code=404, detail=f"Расход {expense_id} не найден")
+    find_expense(expense_id)
     del expenses[expense_id]
+    logger.info("Deleted expense id=%s", expense_id)
     return {"deleted": expense_id}
