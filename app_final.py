@@ -1,9 +1,3 @@
-"""Expense Tracker — небольшой сервис для учёта личных расходов.
-
-Основан на учебном примере app_final.py:
-https://github.com/maximblaze/test_project_inf_course
-"""
-
 import logging
 import os
 import time
