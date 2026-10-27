@@ -51,7 +51,7 @@ https://github.com/maximblaze/test_project_inf_course
 
 ## Установка
 
-Нужен Python 3.12 (подойдёт и 3.10+).
+Нужен Python 3.12.
 
 ```bash
 git clone https://github.com/Alexanderbr1/expense-tracker-api.git
@@ -184,8 +184,8 @@ python -m pytest -v && curl -s http://127.0.0.1:8000/health
 
 ## CI
 
-Workflow `.github/workflows/ci.yml` запускается при каждом `push` и `pull_request`
-в ветку `main`:
+Workflow `.github/workflows/ci.yml` запускается при каждом `push` в любую ветку
+и при `pull_request` в ветку `main`:
 
 1. `test` — устанавливает зависимости и запускает `python -m pytest -v`;
 2. `package` — только после успешных тестов публикует artifact `expense-tracker`
