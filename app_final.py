@@ -125,3 +125,19 @@ def delete_expense(expense_id: int):
     del expenses[expense_id]
     logger.info("Deleted expense id=%s", expense_id)
     return {"deleted": expense_id}
+
+
+@app.get("/stats")
+def stats():
+    by_category: dict[str, float] = {}
+    for e in expenses.values():
+        key = e.category.lower()
+        by_category[key] = by_category.get(key, 0) + e.amount
+    total = round(sum(by_category.values()), 2)
+    logger.info("Stats requested: count=%s total=%s %s", len(expenses), total, CURRENCY)
+    return {
+        "currency": CURRENCY,
+        "count": len(expenses),
+        "total": total,
+        "by_category": {k: round(v, 2) for k, v in by_category.items()},
+    }
